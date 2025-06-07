@@ -1,0 +1,208 @@
+/* Import base styles */
+@import 'styles.css';
+
+/* Transaction table header styles */
+.transaction-table th {
+    font-weight: 600;
+    color: #495057;
+}
+
+/* Transaction table cell alignment */
+.transaction-table td {
+    vertical-align: middle;
+}
+
+/* Transaction amount base styles */
+.transaction-amount {
+    font-weight: 600;
+}
+
+/* Income amount color */
+.transaction-amount.income {
+    color: #198754;
+}
+
+/* Expense amount color */
+.transaction-amount.expense {
+    color: #dc3545;
+}
+
+/* Transaction form spacing and layout */
+.transaction-form .form-group {
+    margin-bottom: 1rem;
+}
+
+.transaction-form .form-label {
+    margin-bottom: 0.5rem;
+}
+
+/* Filter section container styles */
+.transaction-filters {
+    background-color: #fff;
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.transaction-filters .form-label {
+    margin-bottom: 0.5rem;
+}
+
+/* Summary section container styles */
+.transaction-summary {
+    margin-top: 2rem;
+}
+
+/* Summary card styles */
+.transaction-summary .card {
+    text-align: center;
+    padding: 1.5rem;
+}
+
+/* Summary card title styles */
+.transaction-summary .card-title {
+    color: #6c757d;
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+/* Summary card value styles */
+.transaction-summary h3 {
+    font-weight: 600;
+    margin-bottom: 0;
+}
+
+/* Action buttons container layout */
+.transaction-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+/* Action button size adjustments */
+.transaction-actions .btn {
+    padding: 0.25rem 0.5rem;
+}
+
+/* Transaction modal header background */
+.transaction-modal .modal-header {
+    background-color: #f8f9fa;
+}
+
+/* Transaction modal body padding */
+.transaction-modal .modal-body {
+    padding: 1.5rem;
+}
+
+/* Transaction modal form group spacing */
+.transaction-modal .form-group {
+    margin-bottom: 1rem;
+}
+
+/* Toast notification width */
+.transaction-toast {
+    min-width: 300px;
+}
+
+/* Toast header background */
+.transaction-toast .toast-header {
+    background-color: #f8f9fa;
+}
+
+/* Toast body padding */
+.transaction-toast .toast-body {
+    padding: 1rem;
+}
+
+/* Table responsive container */
+.table-responsive {
+    overflow-x: auto;
+}
+
+/* Badge styling */
+.badge {
+    font-weight: 500;
+    padding: 0.5em 0.75em;
+}
+
+/* Progress bar base styles */
+.progress {
+    background-color: #f0f0f0;
+    border-radius: 5px;
+}
+
+/* Toast notification base width */
+.toast {
+    min-width: 250px;
+}
+
+/* Card container styles with shadow */
+.card {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    border: none;
+    margin-bottom: 1rem;
+}
+
+/* Card header styles */
+.card-header {
+    background-color: #fff;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+
+/* Small button size adjustments */
+.btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+}
+
+/* Form control focus states */
+.form-control:focus,
+.form-select:focus {
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(0,123,255,0.25);
+}
+
+/* Summary section value styles */
+#summaryIncome,
+#summaryExpenses,
+#summaryNet {
+    font-weight: 600;
+}
+
+/* Top categories progress bar styles */
+#topCategories .progress {
+    height: 8px;
+    margin-top: 0.5rem;
+}
+
+/* Transaction table cell padding */
+.table > :not(caption) > * > * {
+    padding: 1rem;
+}
+
+/* Transaction table row hover effect */
+.table tbody tr:hover {
+    background-color: rgba(0,0,0,0.02);
+}
+
+/* Custom date range filter section */
+#customDateRange {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(0,0,0,0.05);
+}
+
+/* Modal container styles */
+.modal-content {
+    border: none;
+    box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.15);
+}
+
+/* Modal header border */
+.modal-header {
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+
+/* Modal footer border */
+.modal-footer {
+    border-top: 1px solid rgba(0,0,0,0.05);
+} 

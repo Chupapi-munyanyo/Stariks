@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finance Tracker - Login</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .auth-container {
+            max-width: 400px;
+            margin: 100px auto;
+        }
+        .auth-card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+        .auth-header {
+            background-color: #0d6efd;
+            color: white;
+            padding: 20px;
+            border-radius: 10px 10px 0 0;
+            text-align: center;
+        }
+        .auth-body {
+            padding: 30px;
+        }
+        .form-floating {
+            margin-bottom: 15px;
+        }
+        .auth-footer {
+            text-align: center;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 0 0 10px 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="auth-container">
+            <div class="card auth-card">
+                <div class="auth-header">
+                    <h3 class="mb-0">Finance Tracker</h3>
+                    <p class="mb-0">Manage your finances with ease</p>
+                </div>
+                <div class="auth-body">
+                    <!-- Login Form -->
+                    <form id="loginForm" class="mb-4">
+                        <h4 class="text-center mb-4">Login</h4>
+                        <div class="form-floating">
+                            <input type="text" class="form-control" id="loginUsername" placeholder="Username" required>
+                            <label for="loginUsername">Username</label>
+                        </div>
+                        <div class="form-floating">
+                            <input type="password" class="form-control" id="loginPassword" placeholder="Password" required>
+                            <label for="loginPassword">Password</label>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Login</button>
+                    </form>
+
+                    <hr>
+
+                    <!-- Registration Form -->
+                    <form id="registerForm">
+                        <h4 class="text-center mb-4">Register</h4>
+                        <div class="form-floating">
+                            <input type="text" class="form-control" id="registerUsername" placeholder="Username" required>
+                            <label for="registerUsername">Username</label>
+                        </div>
+                        <div class="form-floating">
+                            <input type="email" class="form-control" id="registerEmail" placeholder="Email" required>
+                            <label for="registerEmail">Email</label>
+                        </div>
+                        <div class="form-floating">
+                            <input type="password" class="form-control" id="registerPassword" placeholder="Password" required>
+                            <label for="registerPassword">Password</label>
+                        </div>
+                        <div class="form-floating">
+                            <input type="password" class="form-control" id="confirmPassword" placeholder="Confirm Password" required>
+                            <label for="confirmPassword">Confirm Password</label>
+                        </div>
+                        <button type="submit" class="btn btn-success w-100">Register</button>
+                    </form>
+                </div>
+                <div class="auth-footer">
+                    <p class="mb-0">Already have an account? <a href="#" id="toggleForms">Switch to Login</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+        <div id="authToast" class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body" id="toastMessage">
+                    Operation successful!
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const loginForm = document.getElementById('loginForm');
+            const registerForm = document.getElementById('registerForm');
+            const toggleForms = document.getElementById('toggleForms');
+            let showingLogin = true;
+
+            // Toggle between login and registration forms
+            toggleForms.addEventListener('click', (e) => {
+                e.preventDefault();
+                showingLogin = !showingLogin;
+                loginForm.style.display = showingLogin ? 'block' : 'none';
+                registerForm.style.display = showingLogin ? 'none' : 'block';
+                toggleForms.textContent = showingLogin ? 'Switch to Register' : 'Switch to Login';
+            });
+
+            // Show toast notification
+            function showToast(message, type = 'success') {
+                const toast = document.getElementById('authToast');
+                toast.className = `toast align-items-center text-white bg-${type} border-0`;
+                document.getElementById('toastMessage').textContent = message;
+                const bsToast = new bootstrap.Toast(toast);
+                bsToast.show();
+            }
+
+            // Handle login
+            loginForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const username = document.getElementById('loginUsername').value;
+                const password = document.getElementById('loginPassword').value;
+
+                try {
+                    const response = await fetch('api/auth.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            action: 'login',
+                            username,
+                            password
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        localStorage.setItem('financeTrackerLoggedIn', 'true');
+                        localStorage.setItem('financeTrackerUser', JSON.stringify({
+                            user_id: data.user_id,
+                            username: data.username
+                        }));
+                        window.location.href = 'transactions.html';
+                    } else {
+                        showToast(data.message, 'danger');
+                    }
+                } catch (error) {
+                    console.error('Login error:', error);
+                    showToast('Error during login', 'danger');
+                }
+            });
+
+            // Handle registration
+            registerForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const username = document.getElementById('registerUsername').value;
+                const email = document.getElementById('registerEmail').value;
+                const password = document.getElementById('registerPassword').value;
+                const confirmPassword = document.getElementById('confirmPassword').value;
+
+                if (password !== confirmPassword) {
+                    showToast('Passwords do not match', 'danger');
+                    return;
+                }
+
+                try {
+                    const response = await fetch('api/auth.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            action: 'register',
+                            username,
+                            email,
+                            password
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        showToast('Registration successful! Please login.', 'success');
+                        // Switch to login form
+                        showingLogin = true;
+                        loginForm.style.display = 'block';
+                        registerForm.style.display = 'none';
+                        toggleForms.textContent = 'Switch to Register';
+                        // Clear registration form
+                        registerForm.reset();
+                    } else {
+                        showToast(data.message, 'danger');
+                    }
+                } catch (error) {
+                    console.error('Registration error:', error);
+                    showToast('Error during registration', 'danger');
+                }
+            });
+
+            // Check if user is already logged in
+            if (localStorage.getItem('financeTrackerLoggedIn') === 'true') {
+                window.location.href = 'transactions.html';
+            }
+        });
+    </script>
+</body>
+</html>

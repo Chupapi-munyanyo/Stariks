@@ -1,0 +1,137 @@
+
+
+
+.budget-card {
+    margin-bottom: 1.5rem;
+}
+
+.budget-card .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.25rem;
+}
+
+.budget-card .card-title {
+    margin-bottom: 0;
+    font-weight: 600;
+}
+
+.budget-card .budget-amount {
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+
+.budget-progress {
+    height: 8px;
+    margin: 0.5rem 0;
+}
+
+.budget-progress .progress-bar {
+    transition: width 0.3s ease-in-out;
+}
+
+.budget-progress .progress-bar.bg-success {
+    background-color: #198754;
+}
+
+.budget-progress .progress-bar.bg-warning {
+    background-color: #ffc107;
+}
+
+.budget-progress .progress-bar.bg-danger {
+    background-color: #dc3545;
+}
+
+
+.budget-stats {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 0.5rem;
+    font-size: 0.875rem;
+    color: #6c757d;
+}
+
+.budget-stats .spent {
+    color: #dc3545;
+}
+
+.budget-stats .remaining {
+    color: #198754;
+}
+
+/* Budget form styles */
+.budget-form .form-group {
+    margin-bottom: 1rem;
+}
+
+.budget-form .form-label {
+    margin-bottom: 0.5rem;
+}
+
+/* Budget category styles */
+.budget-category {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.budget-category-icon {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f8f9fa;
+    border-radius: 50%;
+    color: #6c757d;
+}
+
+/* Budget summary styles */
+.budget-summary {
+    margin-top: 2rem;
+}
+
+.budget-summary .card {
+    text-align: center;
+    padding: 1.5rem;
+}
+
+.budget-summary .card-title {
+    color: #6c757d;
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.budget-summary h3 {
+    font-weight: 600;
+    margin-bottom: 0;
+}
+
+/* Budget modal styles */
+.budget-modal .modal-header {
+    background-color: #f8f9fa;
+}
+
+.budget-modal .modal-body {
+    padding: 1.5rem;
+}
+
+.budget-modal .form-group {
+    margin-bottom: 1rem;
+}
+
+/* Budget toast styles */
+.budget-toast {
+    min-width: 300px;
+}
+
+.budget-toast .toast-header {
+    background-color: #f8f9fa;
+}
+
+.budget-toast .toast-body {
+    padding: 1rem;
+} 

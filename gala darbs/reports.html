@@ -1,0 +1,1620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finance Tracker - Reports</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-bottom: 1rem;
+        }
+        .report-card {
+            transition: transform 0.2s;
+        }
+        .report-card:hover {
+            transform: translateY(-5px);
+        }
+        .progress-circle {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: conic-gradient(#4e73df 0% 75%, #e9ecef 75% 100%);
+            position: relative;
+        }
+        .progress-circle::before {
+            content: '';
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: white;
+            top: 5px;
+            left: 5px;
+        }
+        .alert {
+            margin-bottom: 0.5rem;
+            padding: 0.75rem 1rem;
+            border-radius: 0.35rem;
+        }
+        .alert i {
+            margin-right: 0.5rem;
+        }
+        .alert-success {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+        .alert-warning {
+            background-color: #fff3cd;
+            border-color: #ffeeba;
+            color: #856404;
+        }
+        .alert-danger {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">Finance Tracker</a>
+            <span class="navbar-text text-white me-3" id="userGreeting"></span>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="transactions.html">Transactions</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="budget.html">Budgets</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="reports.html">Reports</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" id="logoutBtn">Logout</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mt-4">
+        <div class="row mb-4">
+            <div class="col">
+                <h2>Financial Reports</h2>
+                <p class="text-muted">Generate detailed reports and export your financial data.</p>
+            </div>
+        </div>
+
+        <!-- Report Controls -->
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <label for="reportType" class="form-label">Report Type</label>
+                                <select class="form-select" id="reportType">
+                                    <option value="summary">Summary Report</option>
+                                    <option value="category">Category Analysis</option>
+                                    <option value="trends">Spending Trends</option>
+                                    <option value="budget">Budget Performance</option>
+                                    <option value="forecast">Spending Forecast</option>
+                                    <option value="savings">Savings Analysis</option>
+                                    <option value="goals">Financial Goals</option>
+                                    <option value="comparison">Year Comparison</option>
+                                    <option value="investment">Investment Tracking</option>
+                                    <option value="debt">Debt Analysis</option>
+                                    <option value="heatmap">Spending Heatmap</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="reportPeriod" class="form-label">Time Period</label>
+                                <select class="form-select" id="reportPeriod">
+                                    <option value="thisMonth">This Month</option>
+                                    <option value="last3Months">Last 3 Months</option>
+                                    <option value="thisYear">This Year</option>
+                                    <option value="lastYear">Last Year</option>
+                                    <option value="custom">Custom Range</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="exportFormat" class="form-label">Export Format</label>
+                                <select class="form-select" id="exportFormat">
+                                    <option value="pdf">PDF</option>
+                                    <option value="csv">CSV</option>
+                                    <option value="excel">Excel</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">&nbsp;</label>
+                                <button class="btn btn-primary w-100" id="generateReportBtn">
+                                    <i class="fas fa-file-export me-2"></i>Generate Report
+                                </button>
+                            </div>
+                            <div class="col-12" id="customDateRange" style="display: none;">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label for="startDate" class="form-label">Start Date</label>
+                                        <input type="date" class="form-control" id="startDate">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="endDate" class="form-label">End Date</label>
+                                        <input type="date" class="form-control" id="endDate">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard Section -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h6 class="card-subtitle mb-2 text-muted">Monthly Savings Rate</h6>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h3 class="card-title mb-0" id="savingsRate">0%</h3>
+                            <div class="progress-circle" id="savingsRateCircle"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h6 class="card-subtitle mb-2 text-muted">Budget Adherence</h6>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h3 class="card-title mb-0" id="budgetAdherence">0%</h3>
+                            <div class="progress-circle" id="budgetAdherenceCircle"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h6 class="card-subtitle mb-2 text-muted">Spending Growth</h6>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h3 class="card-title mb-0" id="spendingGrowth">0%</h3>
+                            <i class="fas fa-chart-line text-primary"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h6 class="card-subtitle mb-2 text-muted">Income Growth</h6>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h3 class="card-title mb-0" id="incomeGrowth">0%</h3>
+                            <i class="fas fa-chart-line text-success"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Alerts Section -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0">Financial Alerts</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="alertsContainer">
+                            <!-- Alerts will be populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Investment Section -->
+        <div class="row mb-4" id="investmentSection" style="display: none;">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0">Investment Portfolio</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="investmentPortfolioChart" height="300"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0">Investment Performance</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="investmentPerformanceChart" height="300"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Debt Analysis Section -->
+        <div class="row mb-4" id="debtSection" style="display: none;">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0">Debt Overview</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="debtOverviewChart" height="300"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0">Debt Payoff Timeline</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="debtPayoffChart" height="300"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Heatmap Section -->
+        <div class="row mb-4" id="heatmapSection" style="display: none;">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0">Spending Heatmap</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="spendingHeatmap" height="400"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Additional Charts Section -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0">Spending Patterns</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="spendingPatternsChart" height="300"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0">Income Sources</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="incomeSourcesChart" height="300"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Goals Progress Section -->
+        <div class="row mb-4" id="goalsSection" style="display: none;">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0">Financial Goals Progress</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="goalsProgress">
+                            <!-- Goals will be populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Year Comparison Section -->
+        <div class="row mb-4" id="yearComparisonSection" style="display: none;">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0">Year-over-Year Comparison</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="yearComparisonChart" height="300"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Forecast Section -->
+        <div class="row mb-4" id="forecastSection" style="display: none;">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0">Spending Forecast</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="forecastChart" height="300"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Report Content -->
+        <div class="row">
+            <!-- Summary Section -->
+            <div class="col-md-4">
+                <div class="card mb-4">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0">Summary</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label text-muted">Total Income</label>
+                            <h4 class="text-success" id="reportIncome">$0.00</h4>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-muted">Total Expenses</label>
+                            <h4 class="text-danger" id="reportExpenses">$0.00</h4>
+                        </div>
+                        <hr>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="fw-bold">Net Balance</span>
+                            <h3 id="reportNet">$0.00</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Section -->
+            <div class="col-md-8">
+                <div class="card mb-4">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0">Visual Analysis</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="mainChart" height="300"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detailed Analysis -->
+            <div class="col-md-6">
+                <div class="card mb-4">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0">Category Breakdown</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="categoryChart" height="300"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card mb-4">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0">Monthly Trends</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="trendsChart" height="300"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detailed Data Table -->
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0">Detailed Data</h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover table-striped mb-0" id="reportTable">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Description</th>
+                                        <th>Category</th>
+                                        <th>Type</th>
+                                        <th class="text-end">Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Data will be populated by JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+        <div id="reportToast" class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body" id="toastMessage">
+                    Report generated successfully!
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Check authentication
+        function isLoggedIn() {
+            return localStorage.getItem('financeTrackerLoggedIn') === 'true';
+        }
+
+        // Global variables
+        let currentUser = JSON.parse(localStorage.getItem('financeTrackerUser'));
+        let transactions = [];
+        let budgets = [];
+        let charts = {};
+
+        // Load data
+        async function loadData() {
+            try {
+                // Load transactions
+                const transactionsResponse = await fetch(`api/transactions.php?user_id=${currentUser.user_id}`);
+                if (!transactionsResponse.ok) throw new Error('Failed to fetch transactions');
+                transactions = await transactionsResponse.json();
+
+                // Load budgets
+                const budgetsResponse = await fetch(`api/budgets.php?user_id=${currentUser.user_id}`);
+                if (!budgetsResponse.ok) throw new Error('Failed to fetch budgets');
+                budgets = await budgetsResponse.json();
+
+                // Generate initial report
+                generateReport();
+            } catch (error) {
+                console.error('Error loading data:', error);
+                showToast('Error loading data', 'danger');
+            }
+        }
+
+        // Format currency
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
+        }
+
+        // Get date range based on period
+        function getDateRange(period) {
+            const now = new Date();
+            let startDate, endDate;
+
+            switch(period) {
+                case 'thisMonth':
+                    startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                    endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+                    break;
+                case 'last3Months':
+                    startDate = new Date(now.getFullYear(), now.getMonth() - 3, 1);
+                    endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+                    break;
+                case 'thisYear':
+                    startDate = new Date(now.getFullYear(), 0, 1);
+                    endDate = new Date(now.getFullYear(), 11, 31);
+                    break;
+                case 'lastYear':
+                    startDate = new Date(now.getFullYear() - 1, 0, 1);
+                    endDate = new Date(now.getFullYear() - 1, 11, 31);
+                    break;
+                case 'custom':
+                    startDate = new Date(document.getElementById('startDate').value);
+                    endDate = new Date(document.getElementById('endDate').value);
+                    break;
+                default:
+                    startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                    endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+            }
+
+            return { startDate, endDate };
+        }
+
+        // Filter transactions by date range
+        function filterTransactionsByDateRange(transactions, startDate, endDate) {
+            return transactions.filter(t => {
+                const transactionDate = new Date(t.transaction_date);
+                return transactionDate >= startDate && transactionDate <= endDate;
+            });
+        }
+
+        // Generate report
+        function generateReport() {
+            const reportType = document.getElementById('reportType').value;
+            const period = document.getElementById('reportPeriod').value;
+            const { startDate, endDate } = getDateRange(period);
+            
+            const filteredTransactions = filterTransactionsByDateRange(transactions, startDate, endDate);
+            
+            // Update summary
+            updateSummary(filteredTransactions);
+            
+            // Update charts based on report type
+            updateCharts(reportType);
+            
+            // Update detailed data table
+            updateDataTable(filteredTransactions);
+        }
+
+        // Update summary section
+        function updateSummary(transactions) {
+            let totalIncome = 0;
+            let totalExpenses = 0;
+            
+            transactions.forEach(transaction => {
+                if (transaction.amount > 0) {
+                    totalIncome += transaction.amount;
+                } else {
+                    totalExpenses += Math.abs(transaction.amount);
+                }
+            });
+            
+            const netBalance = totalIncome - totalExpenses;
+            
+            document.getElementById('reportIncome').textContent = formatCurrency(totalIncome);
+            document.getElementById('reportExpenses').textContent = formatCurrency(totalExpenses);
+            document.getElementById('reportNet').textContent = formatCurrency(netBalance);
+            document.getElementById('reportNet').className = netBalance >= 0 ? 'text-success' : 'text-danger';
+        }
+
+        // Update summary chart
+        function updateSummaryChart(transactions) {
+            const ctx = document.getElementById('mainChart').getContext('2d');
+            
+            // Destroy existing chart if it exists
+            if (charts.main) {
+                charts.main.destroy();
+            }
+            
+            // Prepare data
+            const monthlyData = {};
+            transactions.forEach(transaction => {
+                const date = new Date(transaction.transaction_date);
+                const monthKey = date.toLocaleString('default', { month: 'short', year: 'numeric' });
+                
+                if (!monthlyData[monthKey]) {
+                    monthlyData[monthKey] = { income: 0, expenses: 0 };
+                }
+                
+                if (transaction.amount > 0) {
+                    monthlyData[monthKey].income += transaction.amount;
+                } else {
+                    monthlyData[monthKey].expenses += Math.abs(transaction.amount);
+                }
+            });
+            
+            // Create chart
+            charts.main = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(monthlyData),
+                    datasets: [
+                        {
+                            label: 'Income',
+                            data: Object.values(monthlyData).map(d => d.income),
+                            backgroundColor: '#28a745'
+                        },
+                        {
+                            label: 'Expenses',
+                            data: Object.values(monthlyData).map(d => d.expenses),
+                            backgroundColor: '#dc3545'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        // Update category chart
+        function updateCategoryChart(transactions) {
+            const ctx = document.getElementById('categoryChart').getContext('2d');
+            
+            // Destroy existing chart if it exists
+            if (charts.category) {
+                charts.category.destroy();
+            }
+            
+            // Prepare data
+            const categoryData = {};
+            transactions.forEach(transaction => {
+                if (transaction.amount < 0) { // Only consider expenses
+                    const category = transaction.category_name;
+                    if (!categoryData[category]) {
+                        categoryData[category] = 0;
+                    }
+                    categoryData[category] += Math.abs(transaction.amount);
+                }
+            });
+            
+            // Create chart
+            charts.category = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(categoryData),
+                    datasets: [{
+                        data: Object.values(categoryData),
+                        backgroundColor: [
+                            '#4e73df',
+                            '#1cc88a',
+                            '#36b9cc',
+                            '#f6c23e',
+                            '#e74a3b',
+                            '#858796'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'right'
+                        }
+                    }
+                }
+            });
+        }
+
+        // Update trends chart
+        function updateTrendsChart(transactions) {
+            const ctx = document.getElementById('trendsChart').getContext('2d');
+            
+            // Destroy existing chart if it exists
+            if (charts.trends) {
+                charts.trends.destroy();
+            }
+            
+            // Prepare data
+            const monthlyData = {};
+            transactions.forEach(transaction => {
+                const date = new Date(transaction.transaction_date);
+                const monthKey = date.toLocaleString('default', { month: 'short', year: 'numeric' });
+                
+                if (!monthlyData[monthKey]) {
+                    monthlyData[monthKey] = 0;
+                }
+                
+                monthlyData[monthKey] += transaction.amount;
+            });
+            
+            // Create chart
+            charts.trends = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: Object.keys(monthlyData),
+                    datasets: [{
+                        label: 'Net Cash Flow',
+                        data: Object.values(monthlyData),
+                        borderColor: '#4e73df',
+                        tension: 0.1,
+                        fill: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        // Update budget chart
+        function updateBudgetChart(transactions) {
+            const ctx = document.getElementById('mainChart').getContext('2d');
+            
+            // Destroy existing chart if it exists
+            if (charts.main) {
+                charts.main.destroy();
+            }
+            
+            // Prepare data
+            const budgetData = budgets.map(budget => {
+                const spent = transactions
+                    .filter(t => 
+                        t.category_id === budget.category_id && 
+                        t.amount < 0
+                    )
+                    .reduce((total, t) => total + Math.abs(t.amount), 0);
+                
+                return {
+                    category: budget.category_name,
+                    budget: budget.amount,
+                    spent: spent
+                };
+            });
+            
+            // Create chart
+            charts.main = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: budgetData.map(d => d.category),
+                    datasets: [
+                        {
+                            label: 'Budget',
+                            data: budgetData.map(d => d.budget),
+                            backgroundColor: '#4e73df'
+                        },
+                        {
+                            label: 'Spent',
+                            data: budgetData.map(d => d.spent),
+                            backgroundColor: '#e74a3b'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        // Update data table
+        function updateDataTable(transactions) {
+            const tableBody = document.querySelector('#reportTable tbody');
+            tableBody.innerHTML = '';
+            
+            transactions.forEach(transaction => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${new Date(transaction.transaction_date).toLocaleDateString()}</td>
+                    <td>${transaction.description}</td>
+                    <td>${transaction.category_name}</td>
+                    <td>${transaction.amount > 0 ? 'Income' : 'Expense'}</td>
+                    <td class="text-end ${transaction.amount > 0 ? 'text-success' : 'text-danger'}">
+                        ${formatCurrency(transaction.amount)}
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Export report
+        async function exportReport() {
+            const format = document.getElementById('exportFormat').value;
+            const reportType = document.getElementById('reportType').value;
+            const period = document.getElementById('reportPeriod').value;
+            const { startDate, endDate } = getDateRange(period);
+            
+            const filteredTransactions = filterTransactionsByDateRange(transactions, startDate, endDate);
+            
+            switch(format) {
+                case 'pdf':
+                    exportToPDF(filteredTransactions, reportType);
+                    break;
+                case 'csv':
+                    exportToCSV(filteredTransactions);
+                    break;
+                case 'excel':
+                    exportToExcel(filteredTransactions);
+                    break;
+            }
+        }
+
+        // Export to PDF
+        function exportToPDF(transactions, reportType) {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            // Add title
+            doc.setFontSize(20);
+            doc.text('Financial Report', 14, 20);
+            
+            // Add date range
+            doc.setFontSize(12);
+            doc.text(`Period: ${document.getElementById('reportPeriod').value}`, 14, 30);
+            
+            // Add summary
+            let totalIncome = 0;
+            let totalExpenses = 0;
+            transactions.forEach(t => {
+                if (t.amount > 0) totalIncome += t.amount;
+                else totalExpenses += Math.abs(t.amount);
+            });
+            
+            doc.text(`Total Income: ${formatCurrency(totalIncome)}`, 14, 40);
+            doc.text(`Total Expenses: ${formatCurrency(totalExpenses)}`, 14, 50);
+            doc.text(`Net Balance: ${formatCurrency(totalIncome - totalExpenses)}`, 14, 60);
+            
+            // Add transactions table
+            const tableData = transactions.map(t => [
+                new Date(t.transaction_date).toLocaleDateString(),
+                t.description,
+                t.category_name,
+                t.amount > 0 ? 'Income' : 'Expense',
+                formatCurrency(t.amount)
+            ]);
+            
+            doc.autoTable({
+                head: [['Date', 'Description', 'Category', 'Type', 'Amount']],
+                body: tableData,
+                startY: 70
+            });
+            
+            // Save the PDF
+            doc.save('financial-report.pdf');
+        }
+
+        // Export to CSV
+        function exportToCSV(transactions) {
+            const headers = ['Date', 'Description', 'Category', 'Type', 'Amount'];
+            const csvData = transactions.map(t => [
+                new Date(t.transaction_date).toLocaleDateString(),
+                t.description,
+                t.category_name,
+                t.amount > 0 ? 'Income' : 'Expense',
+                t.amount
+            ]);
+            
+            const csvContent = [
+                headers.join(','),
+                ...csvData.map(row => row.join(','))
+            ].join('\n');
+            
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'financial-report.csv';
+            link.click();
+        }
+
+        // Export to Excel
+        function exportToExcel(transactions) {
+            // For Excel export, we'll use CSV format as it's widely supported
+            exportToCSV(transactions);
+        }
+
+        // Show toast notification
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('reportToast');
+            toast.className = `toast align-items-center text-white bg-${type} border-0`;
+            document.getElementById('toastMessage').textContent = message;
+            const bsToast = new bootstrap.Toast(toast);
+            bsToast.show();
+        }
+
+        // Update charts based on report type
+        function updateCharts(reportType) {
+            // Hide all sections first
+            document.getElementById('goalsSection').style.display = 'none';
+            document.getElementById('yearComparisonSection').style.display = 'none';
+            document.getElementById('forecastSection').style.display = 'none';
+            document.getElementById('investmentSection').style.display = 'none';
+            document.getElementById('debtSection').style.display = 'none';
+            document.getElementById('heatmapSection').style.display = 'none';
+
+            switch(reportType) {
+                case 'summary':
+                    updateSummaryChart(transactions);
+                    updateSpendingPatternsChart(transactions);
+                    updateIncomeSourcesChart(transactions);
+                    break;
+                case 'category':
+                    updateCategoryChart(transactions);
+                    updateSpendingPatternsChart(transactions);
+                    break;
+                case 'trends':
+                    updateTrendsChart(transactions);
+                    updateSpendingPatternsChart(transactions);
+                    break;
+                case 'budget':
+                    updateBudgetChart(transactions);
+                    break;
+                case 'forecast':
+                    document.getElementById('forecastSection').style.display = 'block';
+                    updateForecastChart(transactions);
+                    break;
+                case 'goals':
+                    document.getElementById('goalsSection').style.display = 'block';
+                    updateGoalsProgress();
+                    break;
+                case 'comparison':
+                    document.getElementById('yearComparisonSection').style.display = 'block';
+                    updateYearComparisonChart(transactions);
+                    break;
+                case 'investment':
+                    document.getElementById('investmentSection').style.display = 'block';
+                    updateInvestmentCharts(transactions);
+                    break;
+                case 'debt':
+                    document.getElementById('debtSection').style.display = 'block';
+                    updateDebtCharts(transactions);
+                    break;
+                case 'heatmap':
+                    document.getElementById('heatmapSection').style.display = 'block';
+                    updateSpendingHeatmap(transactions);
+                    break;
+            }
+        }
+
+        // Update spending patterns chart
+        function updateSpendingPatternsChart(transactions) {
+            const ctx = document.getElementById('spendingPatternsChart').getContext('2d');
+            
+            if (charts.spendingPatterns) {
+                charts.spendingPatterns.destroy();
+            }
+            
+            // Group transactions by day of week
+            const dayOfWeekData = {
+                'Sunday': 0, 'Monday': 0, 'Tuesday': 0, 'Wednesday': 0,
+                'Thursday': 0, 'Friday': 0, 'Saturday': 0
+            };
+            
+            transactions.forEach(transaction => {
+                if (transaction.amount < 0) {
+                    const day = new Date(transaction.transaction_date).toLocaleDateString('en-US', { weekday: 'long' });
+                    dayOfWeekData[day] += Math.abs(transaction.amount);
+                }
+            });
+            
+            charts.spendingPatterns = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: Object.keys(dayOfWeekData),
+                    datasets: [{
+                        label: 'Spending by Day',
+                        data: Object.values(dayOfWeekData),
+                        backgroundColor: 'rgba(78, 115, 223, 0.2)',
+                        borderColor: '#4e73df',
+                        pointBackgroundColor: '#4e73df',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: '#4e73df'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        r: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        // Update income sources chart
+        function updateIncomeSourcesChart(transactions) {
+            const ctx = document.getElementById('incomeSourcesChart').getContext('2d');
+            
+            if (charts.incomeSources) {
+                charts.incomeSources.destroy();
+            }
+            
+            // Group income by category
+            const incomeSources = {};
+            transactions.forEach(transaction => {
+                if (transaction.amount > 0) {
+                    const category = transaction.category_name;
+                    if (!incomeSources[category]) {
+                        incomeSources[category] = 0;
+                    }
+                    incomeSources[category] += transaction.amount;
+                }
+            });
+            
+            charts.incomeSources = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: Object.keys(incomeSources),
+                    datasets: [{
+                        data: Object.values(incomeSources),
+                        backgroundColor: [
+                            '#4e73df', '#1cc88a', '#36b9cc', '#f6c23e',
+                            '#e74a3b', '#858796', '#5a5c69'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'right'
+                        }
+                    }
+                }
+            });
+        }
+
+        // Update forecast chart
+        function updateForecastChart(transactions) {
+            const ctx = document.getElementById('forecastChart').getContext('2d');
+            
+            if (charts.forecast) {
+                charts.forecast.destroy();
+            }
+            
+            // Calculate average monthly spending
+            const monthlySpending = {};
+            transactions.forEach(transaction => {
+                if (transaction.amount < 0) {
+                    const month = transaction.transaction_date.substring(0, 7);
+                    if (!monthlySpending[month]) {
+                        monthlySpending[month] = 0;
+                    }
+                    monthlySpending[month] += Math.abs(transaction.amount);
+                }
+            });
+            
+            const avgMonthlySpending = Object.values(monthlySpending).reduce((a, b) => a + b, 0) / 
+                                     Object.keys(monthlySpending).length;
+            
+            // Generate forecast for next 6 months
+            const forecastData = [];
+            const labels = [];
+            const now = new Date();
+            
+            for (let i = 0; i < 6; i++) {
+                const date = new Date(now.getFullYear(), now.getMonth() + i, 1);
+                labels.push(date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }));
+                forecastData.push(avgMonthlySpending);
+            }
+            
+            charts.forecast = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Forecasted Spending',
+                        data: forecastData,
+                        borderColor: '#4e73df',
+                        backgroundColor: 'rgba(78, 115, 223, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: '6-Month Spending Forecast'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        // Update year comparison chart
+        function updateYearComparisonChart(transactions) {
+            const ctx = document.getElementById('yearComparisonChart').getContext('2d');
+            
+            if (charts.yearComparison) {
+                charts.yearComparison.destroy();
+            }
+            
+            // Group transactions by year and month
+            const yearlyData = {};
+            transactions.forEach(transaction => {
+                const date = new Date(transaction.transaction_date);
+                const year = date.getFullYear();
+                const month = date.getMonth();
+                
+                if (!yearlyData[year]) {
+                    yearlyData[year] = new Array(12).fill(0);
+                }
+                yearlyData[year][month] += transaction.amount;
+            });
+            
+            const years = Object.keys(yearlyData).sort();
+            const datasets = years.map(year => ({
+                label: year,
+                data: yearlyData[year],
+                borderColor: year === new Date().getFullYear().toString() ? '#4e73df' : '#858796',
+                fill: false
+            }));
+            
+            charts.yearComparison = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Year-over-Year Comparison'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        // Update goals progress
+        function updateGoalsProgress() {
+            const goalsContainer = document.getElementById('goalsProgress');
+            goalsContainer.innerHTML = '';
+            
+            // Example goals (in a real application, these would come from the database)
+            const goals = [
+                { name: 'Emergency Fund', target: 10000, current: 7500 },
+                { name: 'Vacation Savings', target: 5000, current: 3000 },
+                { name: 'New Car Fund', target: 25000, current: 15000 }
+            ];
+            
+            goals.forEach(goal => {
+                const progress = (goal.current / goal.target) * 100;
+                const goalElement = document.createElement('div');
+                goalElement.className = 'mb-4';
+                goalElement.innerHTML = `
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span>${goal.name}</span>
+                        <span>${formatCurrency(goal.current)} / ${formatCurrency(goal.target)}</span>
+                    </div>
+                    <div class="progress" style="height: 10px;">
+                        <div class="progress-bar" role="progressbar" style="width: ${progress}%" 
+                             aria-valuenow="${progress}" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                `;
+                goalsContainer.appendChild(goalElement);
+            });
+        }
+
+        // Update investment charts
+        function updateInvestmentCharts(transactions) {
+            // Investment Portfolio Chart
+            const portfolioCtx = document.getElementById('investmentPortfolioChart').getContext('2d');
+            if (charts.investmentPortfolio) {
+                charts.investmentPortfolio.destroy();
+            }
+            
+            // Group investments by type
+            const portfolioData = {
+                'Stocks': 0,
+                'Bonds': 0,
+                'Real Estate': 0,
+                'Cryptocurrency': 0,
+                'Other': 0
+            };
+            
+            transactions.forEach(transaction => {
+                if (transaction.category_name === 'Investment') {
+                    const type = transaction.notes || 'Other';
+                    portfolioData[type] += transaction.amount;
+                }
+            });
+            
+            charts.investmentPortfolio = new Chart(portfolioCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(portfolioData),
+                    datasets: [{
+                        data: Object.values(portfolioData),
+                        backgroundColor: [
+                            '#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'right'
+                        }
+                    }
+                }
+            });
+            
+            // Investment Performance Chart
+            const performanceCtx = document.getElementById('investmentPerformanceChart').getContext('2d');
+            if (charts.investmentPerformance) {
+                charts.investmentPerformance.destroy();
+            }
+            
+            // Calculate monthly returns
+            const monthlyReturns = {};
+            transactions.forEach(transaction => {
+                if (transaction.category_name === 'Investment') {
+                    const month = transaction.transaction_date.substring(0, 7);
+                    if (!monthlyReturns[month]) {
+                        monthlyReturns[month] = 0;
+                    }
+                    monthlyReturns[month] += transaction.amount;
+                }
+            });
+            
+            const months = Object.keys(monthlyReturns).sort();
+            const returns = months.map(month => monthlyReturns[month]);
+            
+            charts.investmentPerformance = new Chart(performanceCtx, {
+                type: 'line',
+                data: {
+                    labels: months,
+                    datasets: [{
+                        label: 'Investment Returns',
+                        data: returns,
+                        borderColor: '#4e73df',
+                        backgroundColor: 'rgba(78, 115, 223, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Monthly Investment Returns'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        // Update debt charts
+        function updateDebtCharts(transactions) {
+            // Debt Overview Chart
+            const overviewCtx = document.getElementById('debtOverviewChart').getContext('2d');
+            if (charts.debtOverview) {
+                charts.debtOverview.destroy();
+            }
+            
+            // Group debts by type
+            const debtData = {
+                'Credit Cards': 0,
+                'Loans': 0,
+                'Mortgage': 0,
+                'Other': 0
+            };
+            
+            transactions.forEach(transaction => {
+                if (transaction.category_name === 'Debt') {
+                    const type = transaction.notes || 'Other';
+                    debtData[type] += Math.abs(transaction.amount);
+                }
+            });
+            
+            charts.debtOverview = new Chart(overviewCtx, {
+                type: 'pie',
+                data: {
+                    labels: Object.keys(debtData),
+                    datasets: [{
+                        data: Object.values(debtData),
+                        backgroundColor: [
+                            '#4e73df', '#1cc88a', '#36b9cc', '#f6c23e'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'right'
+                        }
+                    }
+                }
+            });
+            
+            // Debt Payoff Chart
+            const payoffCtx = document.getElementById('debtPayoffChart').getContext('2d');
+            if (charts.debtPayoff) {
+                charts.debtPayoff.destroy();
+            }
+            
+            // Calculate monthly debt payments
+            const monthlyPayments = {};
+            transactions.forEach(transaction => {
+                if (transaction.category_name === 'Debt Payment') {
+                    const month = transaction.transaction_date.substring(0, 7);
+                    if (!monthlyPayments[month]) {
+                        monthlyPayments[month] = 0;
+                    }
+                    monthlyPayments[month] += Math.abs(transaction.amount);
+                }
+            });
+            
+            const months = Object.keys(monthlyPayments).sort();
+            const payments = months.map(month => monthlyPayments[month]);
+            
+            charts.debtPayoff = new Chart(payoffCtx, {
+                type: 'bar',
+                data: {
+                    labels: months,
+                    datasets: [{
+                        label: 'Monthly Debt Payments',
+                        data: payments,
+                        backgroundColor: '#4e73df'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Monthly Debt Payments'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        // Update spending heatmap
+        function updateSpendingHeatmap(transactions) {
+            const ctx = document.getElementById('spendingHeatmap').getContext('2d');
+            if (charts.spendingHeatmap) {
+                charts.spendingHeatmap.destroy();
+            }
+            
+            // Create a 7x24 matrix for hours of the week
+            const heatmapData = Array(7).fill().map(() => Array(24).fill(0));
+            
+            transactions.forEach(transaction => {
+                if (transaction.amount < 0) {
+                    const date = new Date(transaction.transaction_date);
+                    const day = date.getDay();
+                    const hour = date.getHours();
+                    heatmapData[day][hour] += Math.abs(transaction.amount);
+                }
+            });
+            
+            // Find the maximum value for color scaling
+            const maxValue = Math.max(...heatmapData.flat());
+            
+            charts.spendingHeatmap = new Chart(ctx, {
+                type: 'matrix',
+                data: {
+                    datasets: [{
+                        data: heatmapData.flatMap((row, day) => 
+                            row.map((value, hour) => ({
+                                x: hour,
+                                y: day,
+                                v: value
+                            }))
+                        ),
+                        backgroundColor: (context) => {
+                            const value = context.dataset.data[context.dataIndex].v;
+                            const alpha = value / maxValue;
+                            return `rgba(78, 115, 223, ${alpha})`;
+                        },
+                        borderWidth: 1,
+                        borderColor: '#fff',
+                        width: ({ chart }) => (chart.chartArea || {}).width / 24 - 1,
+                        height: ({ chart }) => (chart.chartArea || {}).height / 7 - 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                title: (context) => {
+                                    const day = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][context[0].dataIndex % 7];
+                                    const hour = context[0].dataIndex % 24;
+                                    return `${day} ${hour}:00`;
+                                },
+                                label: (context) => {
+                                    return `Amount: ${formatCurrency(context.raw.v)}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            type: 'linear',
+                            offset: true,
+                            min: 0,
+                            max: 23,
+                            ticks: {
+                                stepSize: 1
+                            },
+                            title: {
+                                display: true,
+                                text: 'Hour of Day'
+                            }
+                        },
+                        y: {
+                            type: 'linear',
+                            offset: true,
+                            min: 0,
+                            max: 6,
+                            ticks: {
+                                stepSize: 1,
+                                callback: (value) => ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][value]
+                            },
+                            title: {
+                                display: true,
+                                text: 'Day of Week'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Update dashboard metrics
+        function updateDashboardMetrics(transactions) {
+            // Calculate savings rate
+            const totalIncome = transactions
+                .filter(t => t.amount > 0)
+                .reduce((sum, t) => sum + t.amount, 0);
+            
+            const totalExpenses = transactions
+                .filter(t => t.amount < 0)
+                .reduce((sum, t) => sum + Math.abs(t.amount), 0);
+            
+            const savingsRate = totalIncome > 0 ? ((totalIncome - totalExpenses) / totalIncome * 100) : 0;
+            document.getElementById('savingsRate').textContent = `${savingsRate.toFixed(1)}%`;
+            
+            // Calculate budget adherence
+            const budgetAdherence = calculateBudgetAdherence(transactions, budgets);
+            document.getElementById('budgetAdherence').textContent = `${budgetAdherence.toFixed(1)}%`;
+            
+            // Calculate spending growth
+            const spendingGrowth = calculateGrowthRate(transactions, 'expense');
+            document.getElementById('spendingGrowth').textContent = `${spendingGrowth.toFixed(1)}%`;
+            
+            // Calculate income growth
+            const incomeGrowth = calculateGrowthRate(transactions, 'income');
+            document.getElementById('incomeGrowth').textContent = `${incomeGrowth.toFixed(1)}%`;
+
+            // Update progress circles
+            updateProgressCircle('savingsRateCircle', savingsRate);
+            updateProgressCircle('budgetAdherenceCircle', budgetAdherence);
+        }
+
+        // Calculate budget adherence
+        function calculateBudgetAdherence(transactions, budgets) {
+            let totalAdherence = 0;
+            let budgetCount = 0;
+            
+            budgets.forEach(budget => {
+                const spent = transactions
+                    .filter(t => t.category_id === budget.category_id && t.amount < 0)
+                    .reduce((sum, t) => sum + Math.abs(t.amount), 0);
+                
+                const adherence = spent <= budget.amount ? 100 : 
+                    (budget.amount / spent * 100);
+                
+                totalAdherence += adherence;
+                budgetCount++;
+            });
+            
+            return budgetCount > 0 ? totalAdherence / budgetCount : 0;
+        }
+
+        // Calculate growth rate
+        function calculateGrowthRate(transactions, type) {
+            const monthlyData = {};
+            
+            transactions.forEach(transaction => {
+                if ((type === 'income' && transaction.amount > 0) ||
+                    (type === 'expense' && transaction.amount < 0)) {
+                    const month = transaction.transaction_date.substring(0, 7);
+                    if (!monthlyData[month]) {
+                        monthlyData[month] = 0;
+                    }
+                    monthlyData[month] += Math.abs(transaction.amount);
+                }
+            });
+            
+            const months = Object.keys(monthlyData).sort();
+            if (months.length < 2) return 0;
+            
+            const firstMonth = monthlyData[months[0]];
+            const lastMonth = monthlyData[months[months.length - 1]];
+            
+            return ((lastMonth - firstMonth) / firstMonth) * 100;
+        }
+
+        // Update progress circle
+        function updateProgressCircle(elementId, value) {
+            const circle = document.getElementById(elementId);
+            if (!circle) return;
+
+            const radius = 20;
+            const circumference = 2 * Math.PI * radius;
+            const offset = circumference - (value / 100) * circumference;
+
+            circle.style.width = '40px';
+            circle.style.height = '40px';
+            circle.style.borderRadius = '50%';
+            circle.style.background = `conic-gradient(
+                #4e73df ${value}%,
+                #e9ecef ${value}%
+            )`;
+        }
+
+        // Event Listeners
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!isLoggedIn()) {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            // Load initial data
+            loadData().then(() => {
+                updateDashboardMetrics(transactions);
+                updateCharts('summary');
+                updateAlerts(transactions, budgets);
+            });
+
+            // Add event listeners
+            document.getElementById('reportType').addEventListener('change', generateReport);
+            document.getElementById('reportPeriod').addEventListener('change', function() {
+                const customDateRange = document.getElementById('customDateRange');
+                customDateRange.style.display = this.value === 'custom' ? 'block' : 'none';
+                generateReport();
+            });
+            document.getElementById('generateReportBtn').addEventListener('click', exportReport);
+
+            // Add event listener for logout
+            document.getElementById('logoutBtn').addEventListener('click', (e) => {
+                e.preventDefault();
+                localStorage.removeItem('financeTrackerLoggedIn');
+                localStorage.removeItem('financeTrackerUser');
+                window.location.href = 'index.html';
+            });
+
+            // Update dashboard metrics when data changes
+            document.getElementById('reportType').addEventListener('change', function() {
+                updateCharts(this.value);
+            });
+        });
+    </script>
+</body>
+</html> 
